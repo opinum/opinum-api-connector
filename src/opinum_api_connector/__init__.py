@@ -4,6 +4,8 @@ from requests_oauthlib import OAuth2Session
 import json
 import requests
 import datetime as dt
+import logging
+from time import sleep
 
 DEFAULT_API_URL = 'https://api.opinum.com'
 DEFAULT_AUTH_URL = 'https://identity.opinum.com'
@@ -14,9 +16,12 @@ DEFAULT_PUSH_URL = 'https://push.opinum.com'
 class ApiConnector:
     time_limit = 3 * 60  # Three minutes
 
+    MAX_RETRIES_WHEN_CONNECTION_FAILURE = 5
+
     def __init__(self,
                  environment=None,
-                 account_id=None):
+                 account_id=None,
+                 retries_when_connection_failure=0):
         self.environment = os.environ if environment is None else environment
         self.api_url = self.environment.get('API_URL', DEFAULT_API_URL)
         self.auth_url = self.environment.get('AUTH_URL', DEFAULT_AUTH_URL)
@@ -26,11 +31,12 @@ class ApiConnector:
         self.creation_time = None
         self.token = None
         self.set_token()
+        self.max_call_attempts = 1 + min(retries_when_connection_failure, self.MAX_RETRIES_WHEN_CONNECTION_FAILURE)
 
     def set_token(self):
         oauth = OAuth2Session(client=LegacyApplicationClient(client_id=self.environment['OPISENSE_CLIENT_ID']))
         args = {
-            'token_url': f"{self.environment['AUTH_URL']}/connect/token",
+            'token_url': f"{self.auth_url}/connect/token",
             'scope': self.scope,
             'username': self.environment['OPISENSE_USERNAME'],
             'password': self.environment['OPISENSE_PASSWORD'],
@@ -51,18 +57,29 @@ class ApiConnector:
                 "Authorization": f"Bearer {self.token['access_token']}"}
 
     def _process_request(self, method, url, data, **kwargs):
-        if data is not None:
-            data = json.dumps(data)
-        params = dict()
-        for k, v in kwargs.items():
-            if isinstance(v, dt.datetime):
-                v = v.strftime('%Y-%m-%dT%H:%M:%S')
-            if k == 'date_from':
-                k = 'from'
-            params[k] = v
+        attempts = 0
+        while attempts < self.max_call_attempts:
+            try:
+                if data is not None:
+                    data = json.dumps(data)
+                params = dict()
+                for k, v in kwargs.items():
+                    if isinstance(v, dt.datetime):
+                        v = v.strftime('%Y-%m-%dT%H:%M:%S')
+                    if k == 'date_from':
+                        k = 'from'
+                    params[k] = v
 
-        response = method(url, data=data, params=params, headers=self.headers)
-        return response
+                response = method(url, data=data, params=params, headers=self.headers)
+                assert response.status_code in (200, 204)
+                return response
+            except (requests.exceptions.ConnectionError, AssertionError) as error:
+                attempts += 1
+                logging.warning(f"Failure {attempts}")
+                sleep(5)
+        if attempts == 5:
+            logging.error(error)
+            raise error
 
     def get(self, endpoint, data=None, **kwargs):
         return self._process_request(requests.get,
