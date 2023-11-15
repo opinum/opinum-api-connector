@@ -5,10 +5,10 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="opinum-api-connector",
-    version="0.0.1",
+    version="1.0.0",
     author="Patrick Watteyne",
     author_email="patrick@watteyne.com",
-    description="Package to interact with the Opisense API",
+    description="Package to interact with the Opinum API",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/opinum/api-connector",
@@ -21,7 +21,7 @@ setuptools.setup(
         'oauthlib'
     ],
     classifiers=[
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.6",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
