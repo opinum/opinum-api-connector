@@ -32,5 +32,18 @@ You first need to create an instance of the ApiConnector class with following pa
 > _retries_when_connection_failure_
 > > number of extra attempts when no 200 or 204 return code (default: 0, maximum: 5)
 
+Once you have your ApiConnector instance, you may use the class methods
 
+* get
+* post
+* put
+* delete
+
+All keyword arguments will be converted to path parameters in the API call with one important exception,
+the _data_ keyword referring to the body of your call.
+
+There are two other class methods for data pushing because we have another API for this
+
+* push_data
+* push_dataframe_data
 
