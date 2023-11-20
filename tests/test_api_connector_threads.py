@@ -1,5 +1,5 @@
 import unittest
-from opinum_api_connector import ApiConnector
+from opinum_api_connector import ApiConnector, multi_thread_request_on_path
 import json
 import concurrent.futures
 
@@ -12,8 +12,34 @@ def get_number_of_sources(connector, source_ids):
     return len(sources)
 
 
+def response_callback(response):
+    return len(response.json())
+
 class MyTestCase(unittest.TestCase):
-    def test_threads(self):
+    def test_internal_defined_threads_on_path_with_default_callback(self):
+        api_connector = ApiConnector(environment=environment, account_id=836)
+        counter = 0
+        for response in multi_thread_request_on_path(api_connector.get,
+                                                     'sources',
+                                                     split_parameter='ids',
+                                                     max_parameter_entities=100,
+                                                     max_futures=100,
+                                                     ids=list(range(400000, 500000))):
+            counter += len(response.json())
+        self.assertEqual(counter, 31)
+
+    def test_internal_defined_threads_on_path_with_callback(self):
+        api_connector = ApiConnector(environment=environment, account_id=836)
+        counter = sum(multi_thread_request_on_path(api_connector.get,
+                                                   'sources',
+                                                   split_parameter='ids',
+                                                   max_parameter_entities=100,
+                                                   max_futures=100,
+                                                   response_callback=response_callback,
+                                                   ids=list(range(400000, 500000))))
+        self.assertEqual(counter, 31)
+
+    def test_outside_defined_threads(self):
         api_connector = ApiConnector(environment=environment, account_id=836)
         counter = 0
         futures = list()

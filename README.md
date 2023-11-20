@@ -2,6 +2,8 @@ This package simplifies the Opinum API calls.
 
 No magic. You need to follow the [Opinum Swagger Documentation](https://api.opinum.com) for correct formatting of your requests
 
+Be aware that this is a new package, certainly missing a lot of features. Feel free to contribute.
+
 You first need to create an instance of the ApiConnector class with following parameters:
 
 > _environment_
@@ -46,4 +48,7 @@ There are two other class methods for data pushing because we have another API f
 
 * push_data
 * push_dataframe_data
+
+There is a little bit of magic with the method multi_thread_request_on_path that splits a list of parameters
+Allowing to make parallel calls.
 

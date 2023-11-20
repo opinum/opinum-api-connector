@@ -6,6 +6,7 @@ import requests
 import datetime as dt
 import logging
 from time import sleep
+import concurrent.futures
 
 DEFAULT_API_URL = 'https://api.opinum.com'
 DEFAULT_AUTH_URL = 'https://identity.opinum.com'
@@ -91,18 +92,19 @@ class ApiConnector:
             logging.error(error)
             raise error
 
-    def get(self, endpoint, **kwargs):
+    def get(self, endpoint, data=None, **kwargs):
         """
         Method for data query in the API
 
         :param endpoint: the Opinum API endpoint
+        :param data: body of the request. Should always be None for a get.
         :param kwargs: dictionary of API call parameters
         :return: the http request response
         """
 
         return self._process_request(requests.get,
                                      f"{self.api_url}/{endpoint}",
-                                     data=None,
+                                     data=data,
                                      **kwargs)
 
     def post(self, endpoint, data=None, **kwargs):
@@ -116,7 +118,7 @@ class ApiConnector:
         """
         return self._process_request(requests.post,
                                      f"{self.api_url}/{endpoint}",
-                                     data,
+                                     data=data,
                                      **kwargs)
 
     def put(self, endpoint, data=None, **kwargs):
@@ -130,7 +132,7 @@ class ApiConnector:
         """
         return self._process_request(requests.put,
                                      f"{self.api_url}/{endpoint}",
-                                     data,
+                                     data=data,
                                      **kwargs)
 
     def delete(self, endpoint, data=None, **kwargs):
@@ -144,7 +146,7 @@ class ApiConnector:
         """
         return self._process_request(requests.delete,
                                      f"{self.api_url}/{endpoint}",
-                                     data,
+                                     data=data,
                                      **kwargs)
 
     def push_data(self, body):
@@ -168,5 +170,48 @@ class ApiConnector:
         """
         kwargs['data'] = df.to_dict('records')
         return self.push_data([kwargs])
+
+
+def default_response_callback(response):
+    return response
+
+
+def multi_thread_request_on_path(method, endpoint,
+                                 split_parameter, max_parameter_entities, max_futures, workers=16,
+                                 response_callback=default_response_callback,
+                                 **kwargs):
+    """
+
+    :param method: The method to use. Most used is api_connector.get where api_connector is an instance of ApiConnector
+    :param endpoint: The endpoint
+    :param split_parameter: The parameter having a list as input that we will split in smaller calls
+    :param max_parameter_entities: The maximum number of parameters in each separate call. Mostly driven by the limit in length of the url on a http get
+    :param max_futures: Preparing at once all threads is not optimal. We better loop on several groups of calls
+    :param workers: The number of parallel threads. default: 16
+    :param response_callback: a method with a requests response as input returning what you expect. default: a method returning the response as is
+    :param kwargs: the list of http parameters
+    :return: a generator returning the results of your response_callback
+    """
+    futures = list()
+    entities = kwargs[split_parameter]
+    future_run_entities = max_parameter_entities * max_futures
+    with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
+        for block in [entities[i: i + future_run_entities] for i in range(0, len(entities), future_run_entities)]:
+            for sub_block in [block[i: i + max_futures] for i in range(0, len(block), max_futures)]:
+                run_args = kwargs.copy()
+                run_args[split_parameter] = sub_block
+                futures.append(executor.submit(method, endpoint, **run_args))
+            while True:
+                all_finished = True
+                for i, future in enumerate(futures):
+                    if future.done():
+                        yield response_callback(future.result())
+                        futures.pop(i)
+                    else:
+                        all_finished = False
+                if all_finished:
+                    break
+
+
 
 
