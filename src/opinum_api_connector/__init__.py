@@ -69,6 +69,7 @@ class ApiConnector:
 
     def _process_request(self, method, url, data, **kwargs):
         attempts = 0
+        error = Exception('Unknown exception')
         while attempts < self.max_call_attempts:
             try:
                 if data is not None:
@@ -84,7 +85,8 @@ class ApiConnector:
                 response = method(url, data=data, params=params, headers=self._headers)
                 assert response.status_code in (200, 204)
                 return response
-            except (requests.exceptions.ConnectionError, AssertionError) as error:
+            except (requests.exceptions.ConnectionError, AssertionError) as e:
+                error = e
                 attempts += 1
                 logging.warning(f"Failure {attempts}")
                 sleep(self.seconds_between_retries)
