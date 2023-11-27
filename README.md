@@ -25,8 +25,8 @@ You first need to create an instance of the ApiConnector class with following pa
 > > * _OPINUM_API_URL_: another API URL than the Europe SaaS one (https://api.opinum.com)
 > > * _OPINUM_AUTH_URL_: another authentication URL than the Europe SaaS one (https://identity.opinum.com)
 > > * _DEFAULT_PUSH_URL_: another push URL than the Europe SaaS one (https://push.opinum.com)
-> > * _OPINUM_SCOPE_: the scope of you session (default: "_opisense-api_")<br>
-> > if you want to push data, the scope should be "_opisense-api push-data_"
+> > * _OPINUM_SCOPE_: the scope of you session (default: "_datahub-api_")<br>
+> > if you want to push data, the scope should be "_datahub-api push-data_"
 
 > _account_id_
 > > one of the tenant ids available for the Datahub user (default: `None`)
