@@ -6,7 +6,7 @@ from opinum_api_connector import ApiConnector
 logging.basicConfig(level=logging.INFO)
 
 
-def default_source_callback(source):
+def default_source_callback(source, target_site):
     return source
 
 
@@ -55,13 +55,14 @@ class SiteContentDuplicator:
 
     def run(self):
         for site_id in self.target_site_ids:
+            site = self.api_connector.get('sites', siteIds=[site_id], displayLevel='VerboseSite').json()[0]
             existing_sources = {s[self.source_key_field]: s for s in self.api_connector.get('sources',
                                                                                             siteId=site_id,
                                                                                             displayLevel='Site').json()}
             source_key_mappings = dict()
             for source in self.template_sources:
                 # key for new source can be different with template
-                new_source = self.source_callback(deepcopy(source))
+                new_source = self.source_callback(deepcopy(source), site)
                 source_key = new_source[self.source_key_field]
                 logging.info(f"Checking source {source_key}")
                 new_source.pop('siteName')
