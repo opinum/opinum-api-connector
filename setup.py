@@ -5,13 +5,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="opinum-api-connector",
-    version="1.1.1",
+    version="1.1.2",
     author="Patrick Watteyne",
     author_email="patrick@watteyne.com",
     description="Package to interact with the Opinum API",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/opinum/api-connector",
+    url="https://github.com/opinum/opinum-api-connector",
     package_dir={"": "src"},
     packages=setuptools.find_packages(where="src"),
     python_requires=">=3.6",
