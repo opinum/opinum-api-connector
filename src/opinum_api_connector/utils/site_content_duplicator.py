@@ -90,6 +90,9 @@ class SiteContentDuplicator:
             for variable in self.api_connector.get('variables',
                                                    sourceId=source['id'],
                                                    displayLevel='Verbose').json():
+                if 'mappingConfig' not in variable:
+                    logging.warning(f"Variable named {variable['name']} has no mapping config. Ignored")
+                    continue
                 logging.info(f"\tGetting info for variable {variable['mappingConfig']}")
                 self.template_vars[source[self.source_key_field]][variable['mappingConfig']] = variable
                 self.template_var_id_infos[variable['id']] = {
