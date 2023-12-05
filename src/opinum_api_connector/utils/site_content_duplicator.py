@@ -133,7 +133,10 @@ class SiteContentDuplicator:
         calculated_variables_templates = dict()
         existing_variables = dict()
         for source_key, source in existing_sources.items():
-            if do_not_process_variable(source_key, allowed_sources, excluded_sources):
+            if source[self.source_key_field] not in self.template_vars:
+                logging.warning(f"Source {source_key} is not existing in template. No variables to handle")
+                continue
+            if do_not_process_source(source_key, allowed_sources, excluded_sources):
                 logging.info(f"Source {source_key} is excluded from processing. No variables to handle")
                 continue
             logging.info(f"Checking variables for source {source_key}")
