@@ -78,14 +78,14 @@ class SiteContentDuplicator:
         self.ignore_missing_calculated_inputs = ignore_missing_calculated_inputs
         self.update = update
         self.api_connector = ApiConnector(account_id=account_id)
-        self.template_sources = list()
+        self.template_sources = dict()
         self.template_vars = dict()
         self.template_var_id_infos = dict()
         for source in self.api_connector.get('sources',
                                              siteId=self.template_site_id,
                                              displayLevel='Site').json():
             logging.info(f"Getting info for source {source[self.source_key_field]}")
-            self.template_sources.append(source)
+            self.template_sources[source['id']] = source
             self.template_vars[source[self.source_key_field]] = dict()
             for variable in self.api_connector.get('variables',
                                                    sourceId=source['id'],
@@ -108,7 +108,7 @@ class SiteContentDuplicator:
         source_key_mappings = dict()
         allowed_sources = self.get_allowed_sources(site, self)
         excluded_sources = self.get_excluded_sources(site, self)
-        for source in self.template_sources:
+        for source in self.template_sources.values():
             # key for new source can be different with template
             new_source = self.source_callback(deepcopy(source), site)
             source_key = new_source[self.source_key_field]
@@ -186,6 +186,15 @@ class SiteContentDuplicator:
                         if sub_var['siteId'] != self.template_site_id:
                             new_variables_list.append(deepcopy(sub_var))
                             continue
+                        if sub_var['variableId'] not in self.template_var_id_infos:
+                            message = (f"Source {sub_source_info['source'][self.source_key_field]} has an input variable"
+                                       f" without mapping config.")
+                            if self.ignore_missing_calculated_inputs:
+                                logging.info(f"{message} Dropped from the list of input variables")
+                            else:
+                                logging.info(f"{message} We keep the template variable")
+                                new_variables_list.append(deepcopy(sub_var))
+                            continue
                         sub_source_info = self.template_var_id_infos[sub_var['variableId']]
                         if sub_source_info['source'][self.source_key_field] not in source_key_mappings:
                             message = (f"Source {sub_source_info['source'][self.source_key_field]} has an input variable"
@@ -214,20 +223,30 @@ class SiteContentDuplicator:
                     formula['variables'] = new_variables_list
                     new_entities_list = list()
                     for form_value in formula['entities']:
-                        sub_source_info = self.template_var_id_infos[sub_var['variableId']]
-                        if sub_source_info['source'][self.source_key_field] not in source_key_mappings:
+                        if form_value['siteId'] != self.template_site_id:
+                            new_entities_list.append(deepcopy(form_value))
+                            continue
+                        new_form_value = deepcopy(form_value)
+                        if new_form_value['entityType'] == 1: # Site form
+                            new_form_value['siteId'] = site['id']
+                            new_form_value['entityId'] = site['id']
+                            new_entities_list.append(deepcopy(form_value))
+                            continue
+                        sub_source = self.template_sources[form_value['sourceId']]
+                        if sub_source[self.source_key_field] not in source_key_mappings:
                             message = (f"Source {sub_source_info['source'][self.source_key_field]} has an input form field"
                                        f" but is not covered by this run.")
                             if self.ignore_missing_calculated_inputs:
                                 logging.info(f"{message} Dropped from the list of input form fields")
                             else:
                                 logging.info(f"{message} We keep the template form field")
-                                new_entities_list.append(deepcopy(form_value))
+                                new_entities_list.append(new_form_value)
                             continue
                         sub_source_key = source_key_mappings[sub_source_info['source'][self.source_key_field]]
-                        form_value['siteId'] = site['id']
-                        form_value['sourceId'] = existing_sources[sub_source_key]['id']
-                        form_value['entityId'] = existing_sources[sub_source_key]['id']
+                        new_form_value['siteId'] = site['id']
+                        new_form_value['sourceId'] = existing_sources[sub_source_key]['id']
+                        new_form_value['entityId'] = existing_sources[sub_source_key]['id']
+                        new_entities_list.append(new_form_value)
                     formula['entities'] = new_entities_list
                 self.api_connector.put(f"sources/{source['id']}/variables/{new_var_id}", data=new_var)
                 existing_variables[mapping] = new_var
