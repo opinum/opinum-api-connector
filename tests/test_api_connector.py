@@ -1,7 +1,7 @@
 import unittest
 from opinum_api_connector import ApiConnector
 import json
-import concurrent.futures
+from io import BytesIO
 
 with open('local.settings.json') as f:
     environment = json.load(f)
@@ -28,6 +28,14 @@ class MyTestCase(unittest.TestCase):
         api_connector2 = ApiConnector(environment=environment, account_id=336)
         self.assertEqual(len(api_connector.get('sources', siteId=204488).json()), 3)
         self.assertEqual(len(api_connector2.get('sources', siteId=204488).json()), 0)
+
+    def test_file_storage(self):
+        api_connector = ApiConnector(environment=environment, account_id=836)
+        with BytesIO() as hello:
+            hello.write(b'Hello World!')
+            hello.seek(0)
+            azure_id = api_connector.send_file_to_storage('Hello.txt', hello, 'text/plain').json()
+        self.assertIsNotNone(api_connector.get(f"storage/{azure_id}").json())
 
 
 if __name__ == '__main__':
