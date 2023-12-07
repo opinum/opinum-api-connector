@@ -182,7 +182,7 @@ class ApiConnector:
         :param mime_type: The file MIME Type
         :return: the http request response
         """
-        return requests.post(f"{self.api_url}/storage?storageFilter.paging.pageNumber=1",
+        return requests.post(f"{self.api_url}/storage?filename={filename}",
                              files={'data': (filename, file_io, mime_type)},
                              headers={"Authorization": self._headers['Authorization']})
 
