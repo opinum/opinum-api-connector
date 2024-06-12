@@ -1,3 +1,17 @@
+Metadata-Version: 2.1
+Name: opinum-api-connector
+Version: 1.2.6
+Summary: Package to interact with the Opinum API
+Home-page: https://github.com/opinum/opinum-api-connector
+Author: Opinum
+Author-email: support@opinum.com
+Classifier: Programming Language :: Python :: 3.6
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
 This package simplifies the Opinum API calls.
 
 No magic. You need to follow the [Opinum Swagger Documentation](https://api.opinum.com) for correct formatting of your requests
@@ -53,3 +67,4 @@ There are two other class methods for data pushing because we have another API f
 
 There is a little bit of magic with the method multi_thread_request_on_path that splits a list of parameters
 Allowing to make parallel calls.
+

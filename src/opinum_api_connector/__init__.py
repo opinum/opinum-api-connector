@@ -123,6 +123,20 @@ class ApiConnector:
                                      data=data,
                                      **kwargs)
 
+    def patch(self, endpoint, data=None, **kwargs):
+        """
+        Method for data patching in the API
+
+        :param endpoint: the Opinum API endpoint
+        :param data: body of the request
+        :param kwargs: dictionary of API call parameters; see https://jsonpatch.com/
+        :return: the http request response
+        """
+        return self._process_request(requests.patch,
+                                     f"{self.api_url}/{endpoint}",
+                                     data=data,
+                                     **kwargs)
+
     def put(self, endpoint, data=None, **kwargs):
         """
         Method for data update in the API
@@ -173,6 +187,19 @@ class ApiConnector:
         kwargs['data'] = df.to_dict('records')
         return self.push_data([kwargs])
 
+    def send_file_to_storage(self, filename, file_io, mime_type):
+        """
+        Method for sending a file to the storage
+
+        :param filename: The file name you want to give in the storage
+        :param file_io: a Bytes IO or a file opened in binary
+        :param mime_type: The file MIME Type
+        :return: the http request response
+        """
+        return requests.post(f"{self.api_url}/storage?filename={filename}",
+                             files={'data': (filename, file_io, mime_type)},
+                             headers={"Authorization": self._headers['Authorization']})
+
 
 def default_response_callback(response):
     return response
@@ -213,7 +240,4 @@ def multi_thread_request_on_path(method, endpoint,
                         all_finished = False
                 if all_finished:
                     break
-
-
-
 
