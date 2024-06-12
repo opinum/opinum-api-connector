@@ -7,7 +7,7 @@ setuptools.setup(
     name="opinum-api-connector",
     version="1.2.6",
     author="Opinum",
-    author_email="patrick@watteyne.com",
+    author_email="support@opinum.com",
     description="Package to interact with the Opinum API",
     long_description=long_description,
     long_description_content_type="text/markdown",
