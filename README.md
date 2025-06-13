@@ -4,6 +4,8 @@ No magic. You need to follow the [Opinum Swagger Documentation](https://api.opin
 
 Be aware that this is a new package, certainly missing a lot of features. Feel free to contribute.
 
+NEW in 1.2.7: added optional operation ID to push_data call
+
 You first need to create an instance of the ApiConnector class with following parameters:
 
 > _environment_

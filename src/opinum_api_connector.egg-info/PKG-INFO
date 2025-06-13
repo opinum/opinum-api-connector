@@ -1,4 +1,4 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: opinum-api-connector
 Version: 1.2.7
 Summary: Package to interact with the Opinum API
@@ -14,6 +14,16 @@ License-File: LICENSE
 Requires-Dist: requests
 Requires-Dist: requests_oauthlib
 Requires-Dist: oauthlib
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
 
 This package simplifies the Opinum API calls.
 

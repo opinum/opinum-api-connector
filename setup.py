@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="opinum-api-connector",
-    version="1.2.6",
+    version="1.2.7",
     author="Opinum",
     author_email="support@opinum.com",
     description="Package to interact with the Opinum API",
