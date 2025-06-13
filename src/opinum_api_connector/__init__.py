@@ -165,15 +165,16 @@ class ApiConnector:
                                      data=data,
                                      **kwargs)
 
-    def push_data(self, body):
+    def push_data(self, body, operation_id: str=None):
         """
         Method for data push in the API
 
         :param body: see https://docs.opinum.com/articles/push-formats/standard-format.html
+        :param operation_id: a string representing the operationId of the push; see https://docs.opinum.com/articles/push-formats/standard-format.html#ask-for-a-webhook-notification
         :return: the http request response
         """
         return self._process_request(requests.post,
-                                     self.push_url,
+                                     self.push_url+("?"+str(operation_id) if operation_id is not None else ""),
                                      body)
 
     def push_dataframe_data(self, df, **kwargs):

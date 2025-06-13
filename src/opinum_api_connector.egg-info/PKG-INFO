@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: opinum-api-connector
-Version: 1.2.6
+Version: 1.2.7
 Summary: Package to interact with the Opinum API
 Home-page: https://github.com/opinum/opinum-api-connector
 Author: Opinum
@@ -20,6 +20,8 @@ This package simplifies the Opinum API calls.
 No magic. You need to follow the [Opinum Swagger Documentation](https://api.opinum.com) for correct formatting of your requests
 
 Be aware that this is a new package, certainly missing a lot of features. Feel free to contribute.
+
+NEW in 1.2.7: added optional operation ID to push_data call
 
 You first need to create an instance of the ApiConnector class with following parameters:
 
